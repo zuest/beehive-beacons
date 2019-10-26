@@ -8,6 +8,7 @@ import { EstimoteBeacons } from '@ionic-native/estimote-beacons';
 import { IBeacon } from '@ionic-native/ibeacon';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { HelperServiceProvider } from '../providers/helper-service/helper-service';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,9 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     SplashScreen,
     EstimoteBeacons,
     IBeacon,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    HelperServiceProvider,
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+
   ]
 })
 export class AppModule {}

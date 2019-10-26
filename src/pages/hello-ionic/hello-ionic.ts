@@ -5,20 +5,28 @@ import { EstimoteBeacons } from '@ionic-native/estimote-beacons';
 import { IBeacon } from '@ionic-native/ibeacon';
 import { Platform } from 'ionic-angular';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {HelperServiceProvider} from "../../providers/helper-service/helper-service";
 
 declare var evothings:any;
-var methodisRun:any;
+
+
+
 @IonicPage()
 @Component({
   selector: 'page-hello-ionic',
   templateUrl: 'hello-ionic.html'
 })
 export class HelloIonicPage {
+    driver:any = "mohammed";
+    carType:any = "Toyota";
+    plateno:any = "1305";
+    pickingPoint:any = "G2";
  beconeDistance:any;
   beconeDt:any;
-  constructor(private eb: EstimoteBeacons,private ibeacon: IBeacon,private change: ChangeDetectorRef,public plt: Platform,private httpClient: HttpClient) {
 
-  }
+constructor(private eb: EstimoteBeacons,private ibeacon: IBeacon,private change: ChangeDetectorRef,public plt: Platform,private httpClient: HttpClient,private helper:HelperServiceProvider) {
+console.log("becone dist",this.beconeDistance);
+}
 
   ionViewDidEnter() {
     // Only called once on first enter.
@@ -31,6 +39,19 @@ export class HelloIonicPage {
     this.plt.ready().then((readySource) => {
       console.log("platform ready:");
       evothings.eddystone.startScan((beaconData) => {
+
+
+        setTimeout(() => {
+          if (!this.helper.methodisRun) {
+            console.log("method is running now.")
+          }
+          else {
+            this.helper.methodisRun = true;
+            console.log("method stoped.");
+          }
+        },2000);
+
+
         console.log("in eddystone");
         console.log(beaconData);
         this.beconeDt = beaconData;
@@ -38,10 +59,11 @@ export class HelloIonicPage {
           beaconData.txPower, beaconData.rssi);
         this.beconeDistance = parseFloat(distance)*10;
         if (isNaN(this.beconeDistance)) {
-          this.beconeDistance = 0.8568657456 + "  Metres";
+          this.beconeDistance = 0.85+ "  Metres";
         }
-        else{
-          this.beconeDistance = this.beconeDistance + "  Metres";
+        else {
+          this.beconeDistance = (this.beconeDistance.toString().substring(0,3)) + "  Metres";
+          this.SendToserver();
         }
 
 
@@ -61,17 +83,28 @@ export class HelloIonicPage {
       })
     };
 
+      if (this.helper.methodisRun==null) {
+        console.log("isrun: ",this.helper.methodisRun);
+        console.log("method is running now.");
+        this.helper.methodisRun = true;
+        let id = {
+          "id": "tick"+Math.floor((Math.random() * 100) + 1)
+        };
 
-    let id = {
-      "id": "tick"+Math.floor((Math.random() * 100) + 1)
-    };
-    this.httpClient.post('https://cors-anywhere.herokuapp.com/http://codecamp.albarakaexperts.com/Home/ReciveBeacon', id, httpOptions)
-      .subscribe(data => {
-        console.log(data['_body']);
-        console.log(data);
-      }, error => {
-        console.log(error);
-      });
+        this.httpClient.post('https://cors-anywhere.herokuapp.com/http://codecamp.albarakaexperts.com/Home/ReciveBeacon', id, httpOptions)
+          .subscribe(data => {
+            this.helper.responseFromServer = data['Message'];
+          }, error => {
+            console.log(error);
+          });
+      }
+      else {
+        this.helper.methodisRun = true;
+        console.log("method stoped.")
+      }
+
+
+
   }
 
 }
